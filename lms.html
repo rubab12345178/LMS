@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LMS Portal</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #ff4d88, #6c5ce7);
+      color: #fff;
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Login Screen */
+    .login-container {
+      margin: auto;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: 20px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .login-container h2 { margin-bottom: 20px; }
+    .login-container input {
+      width: 90%; padding: 12px; border: none;
+      border-radius: 10px; margin: 10px 0; font-size: 15px;
+    }
+    .login-container button {
+      padding: 12px 20px; border: none; border-radius: 12px;
+      background: #ff4d88; color: #fff; cursor: pointer;
+      font-size: 15px; margin-top: 10px; transition: 0.3s;
+    }
+    .login-container button:hover { background: #e84393; }
+
+    /* Layout after login */
+    .app { display: none; width: 100%; }
+    .sidebar {
+      width: 250px; height: 100vh;
+      background: rgba(0,0,0,0.25); backdrop-filter: blur(10px);
+      padding: 20px; box-sizing: border-box;
+    }
+    .sidebar h2 { margin-bottom: 30px; font-size: 20px; text-align: center; }
+    .menu-item {
+      padding: 12px 15px; margin: 8px 0;
+      border-radius: 10px; cursor: pointer; transition: 0.3s;
+    }
+    .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.2); }
+
+    /* Main Content */
+    .main { flex: 1; padding: 30px; overflow-y: auto; }
+    .card {
+      background: rgba(255,255,255,0.15);
+      border-radius: 15px; padding: 20px; margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+    .card h3 { margin-top: 0; }
+    input, select {
+      width: 100%; padding: 12px; border-radius: 10px;
+      border: none; margin: 8px 0; font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div class="login-container" id="loginPage">
+    <h2>LMS Login</h2>
+    <input type="text" id="username" placeholder="Enter Username">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- LMS App -->
+  <div class="app" id="app">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>LMS</h2>
+      <div class="menu-item active" onclick="showPage('dashboard')">Dashboard</div>
+      <div class="menu-item" onclick="showPage('courses')">Courses</div>
+      <div class="menu-item" onclick="showPage('attendance')">Attendance</div>
+      <div class="menu-item" onclick="showPage('assignments')">Assignments</div>
+      <div class="menu-item" onclick="showPage('announcements')">Announcements</div>
+      <div class="menu-item" onclick="showPage('settings')">Settings</div>
+    </div>
+
+    <!-- Main -->
+    <div class="main" id="content"></div>
+  </div>
+
+  <script>
+    let currentUser = "";
+
+    // Login
+    function login() {
+      let user = document.getElementById("username").value;
+      let pass = document.getElementById("password").value;
+
+      if(user && pass){
+        currentUser = user;
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("app").style.display = "flex";
+        showPage("dashboard");
+      } else {
+        alert("Please enter username & password!");
+      }
+    }
+
+    // Page Loader
+    function showPage(page) {
+      let content = document.getElementById("content");
+      let items = document.querySelectorAll(".menu-item");
+      items.forEach(i => i.classList.remove("active"));
+      if(event) event.target.classList.add("active");
+
+      if(page === "dashboard"){
+        content.innerHTML = `
+          <div class="card">
+            <h3>Dashboard</h3>
+            <p>Welcome <b>${currentUser}</b> 🎉</p>
+            <p>This is your personalized dashboard.</p>
+          </div>`;
+      }
+
+      if(page === "courses"){
+        content.innerHTML = `
+          <div class="card">
+            <h3>Courses</h3>
+            <input type="text" placeholder="Enter new course..." oninput="updateCourse(this.value)">
+            <div id="courseList"></div>
+          </div>`;
+      }
+
+      if(page === "attendance"){
+        content.innerHTML = `
+          <div class="card">
+            <h3> Attendance</h3>
+            <select id="studentSelect">
+              <option>Ali</option>
+              <option>Ayesha</option>
+              <option>Ahmed</option>
+              <option>Sarah</option>
+            </select>
+            <select id="statusSelect">
+              <option>Present</option>
+              <option>Absent</option>
+              <option>Leave</option>
+            </select>
+            <button onclick="markAttendance()">Mark Attendance</button>
+            <div id="attendanceList"></div>
+          </div>`;
+      }
+
+      if(page === "assignments"){
+        content.innerHTML = `
+          <div class="card">
+            <h3>Assignments</h3>
+            <input type="text" id="assignmentInput" placeholder="Enter assignment name..." oninput="updateAssignment(this.value)">
+            <div id="assignmentList"></div>
+          </div>`;
+      }
+
+      if(page === "announcements"){
+        content.innerHTML = `
+          <div class="card">
+            <h3>📢 Announcements</h3>
+            <input type="text" id="announceInput" placeholder="Enter announcement..." oninput="updateAnnouncement(this.value)">
+            <div id="announceList"></div>
+          </div>`;
+      }
+
+      if(page === "settings"){
+        content.innerHTML = `
+          <div class="card">
+            <h3> Settings</h3>
+            <input type="text" id="newName" placeholder="Change Username...">
+            <button onclick="changeName()">Save</button>
+          </div>`;
+      }
+    }
+
+    // Course updater
+    function updateCourse(val){
+      document.getElementById("courseList").innerHTML = val ? `<p>Added Course: <b>${val}</b></p>` : "";
+    }
+
+    // Attendance
+    function markAttendance(){
+      let student = document.getElementById("studentSelect").value;
+      let status = document.getElementById("statusSelect").value;
+      let div = document.getElementById("attendanceList");
+      div.innerHTML += `<p>${student}: <b>${status}</b></p>`;
+    }
+
+    // Assignment updater
+    function updateAssignment(val){
+      document.getElementById("assignmentList").innerHTML = val ? `<p>New Assignment: <b>${val}</b></p>` : "";
+    }
+
+    // Announcement updater
+    function updateAnnouncement(val){
+      document.getElementById("announceList").innerHTML = val ? `<p>📢 ${val}</p>` : "";
+    }
+
+    // Change Username
+    function changeName(){
+      let newName = document.getElementById("newName").value;
+      if(newName){
+        currentUser = newName;
+        alert("Username updated to " + newName);
+        showPage("dashboard");
+      }
+    }
+  </script>
+</body>
+</html>
